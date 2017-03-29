@@ -1,6 +1,7 @@
 int num_planets = 5;
 final int win_size_x = 1400, win_size_y = 1000;
 final int TEXT_SIZE = 12;
+final float VARIANCE = 0.3;
 boolean DEBUG = true;
 Planet sun;
 
@@ -18,7 +19,7 @@ void setup() {
   planets.add(sun);
   
   for(int i = 0; i < num_planets; i++) {
-    float var = random(0.9, 1.1);
+    float var = random(1-VARIANCE, 1+VARIANCE);
     
     float size = 4*var + i/3;
     int distance_from_sun = (int)(100*var + 100*i);
