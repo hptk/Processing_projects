@@ -1,16 +1,20 @@
-final int num_planets = 5;
-final int win_size_x = 1400, win_size_y = 1000;
+final int NUM_PLANETS = 5;
+final int WIN_X = 1400, WIN_Y = 1000;
 final int TEXT_SIZE = 12;
-final float VARIANCE = 0.3;
-final boolean DEBUG = false;
+final float VARIANCE = 0.6;
+final boolean DEBUG = true;
 final boolean ALLOW_COMETS = true;
 final int COMET_SIZE = 2;
 
 Sun sun;
+int comet_count = 0;
+int collision_count = 0;
+int start_time = 0;
 
 ArrayList<Planet> planets;
 
 void setup() {
+  start_time = millis();
   size(1400, 1000);
   noStroke();
   background(0.0);
@@ -18,18 +22,19 @@ void setup() {
   textLeading(TEXT_SIZE);
   textAlign(LEFT, TOP);
   
-  planets = new ArrayList<Planet>(num_planets);
+  planets = new ArrayList<Planet>(NUM_PLANETS);
   sun = new Sun();
   planets.add(sun);
   
-  for(int i = 0; i < num_planets; i++) {
+  for(int i = 0; i < NUM_PLANETS; i++) {
     float var = random(1-VARIANCE, 1+VARIANCE);
     int distance_from_sun = (int)(100*var + 100*i);
 
     if(ALLOW_COMETS && (int)random(5)%5 == 0) { //comet
       double speed = orbital_velocity(COMET_SIZE, distance_from_sun)/3;
-      planets.add(new Comet(distance_from_sun+250, speed));
+      planets.add(new Comet((int)(distance_from_sun+(250*var)), speed*var));
       i--;
+      comet_count++;
     } else { //planet
       float size = 4*var + i/3;
       double speed = orbital_velocity(size, distance_from_sun)+0.4;
@@ -42,11 +47,12 @@ void setup() {
 
 void draw() {
   fill(0xa000000);
-  rect(0, 0, win_size_x, win_size_y);
+  rect(0, 0, WIN_X, WIN_Y);
   for(Planet p : planets) {
     move_planet(p);
     draw_planet(p);
   }
+  if(DEBUG) write_all_info();
 }
 
 void draw_planet(Planet p) {
@@ -67,6 +73,29 @@ void write_planet_info(Planet p) {
   fill(0xffffffff);
   String text = "v: " + (int)pyth(p.vx, p.vy) + "\nm: " + (int)p.mass;
   text(text, p.x+p.size+3, p.y+p.size+2);
+}
+
+void write_all_info() {
+  stroke(0xffffffff);
+  fill(0x000000);
+  rect(1, 1, 200, TEXT_SIZE*5+2);
+  noStroke();
+  fill(0xffffffff);
+  
+  String text = "INFORMATION:";
+  text += "\nPlanets: " + NUM_PLANETS;
+  text += "\nComets: " + comet_count;
+  text += "\nCollisions: " + collision_count;
+  text += "\nTime: " + (millis() - start_time) / 1000;
+  text(text, 2, 2);
+}
+
+int get_total_planet_mass() {
+  float total_mass = 0.0;
+  for(Planet p : planets) {
+    total_mass += p.mass;
+  }
+  return (int)total_mass;
 }
 
 void move_planet(Planet p1) {
@@ -105,6 +134,7 @@ void collision(Planet p1, Planet p2){
     p2.vx = 0;
     p2.vy = 0;
   }
+  collision_count++;
 }
 
 double force_of_gravity(Planet p1, Planet p2) {
@@ -151,23 +181,23 @@ class Planet {
     
     switch(pos){
       case 0:
-        this.y = win_size_y/2 - distance_from_sun;
-        this.x = win_size_x/2;
+        this.y = WIN_Y/2 - distance_from_sun;
+        this.x = WIN_X/2;
         this.vx = speed;
         break;
       case 1:
-        this.y = win_size_y/2 + distance_from_sun;
-        this.x = win_size_x/2;
+        this.y = WIN_Y/2 + distance_from_sun;
+        this.x = WIN_X/2;
         this.vx = -speed;
         break;
       case 2:
-        this.y = win_size_y/2;
-        this.x = win_size_x/2  - distance_from_sun;
+        this.y = WIN_Y/2;
+        this.x = WIN_X/2  - distance_from_sun;
         this.vy = -speed;
         break;
       case 3:
-        this.y = win_size_y/2;
-        this.x = win_size_x/2 + distance_from_sun;
+        this.y = WIN_Y/2;
+        this.x = WIN_X/2 + distance_from_sun;
         this.vy = speed;
     }
     
