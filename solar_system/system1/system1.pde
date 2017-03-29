@@ -26,8 +26,8 @@ void setup() {
     int distance_from_sun = (int)(100*var + 100*i);
 
     if(ALLOW_COMETS && (int)random(5)%5 == 0) { //comet
-      double speed = orbital_velocity(COMET_SIZE, distance_from_sun)/2;
-      planets.add(new Comet(distance_from_sun, speed));
+      double speed = orbital_velocity(COMET_SIZE, distance_from_sun)/3;
+      planets.add(new Comet(distance_from_sun+250, speed));
       i--;
     } else { //planet
       float size = 4*var + i/3;
