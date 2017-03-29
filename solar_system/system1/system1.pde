@@ -46,6 +46,7 @@ void draw_planet(Planet p) {
 }
 
 void write_planet_info(Planet p) {
+  if(p == sun) return;
   fill(0x000000);
   stroke(0x000000);
   rect(p.x+p.size-2, p.y+p.size-2, 30+6, TEXT_SIZE+6);
@@ -53,7 +54,7 @@ void write_planet_info(Planet p) {
   fill(0x000000);
   rect(p.x+p.size, p.y+p.size, 30, TEXT_SIZE+2);
   noStroke();
-  fill(p.fill);
+  fill(0xffffffff);
   String text = "v: " + (int)pyth(p.vx, p.vy);
   text(text, p.x+p.size, p.y+p.size);
 }
@@ -86,9 +87,13 @@ boolean calculate_movement(Planet p1, Planet p2){
 void collision(Planet p1, Planet p2){ 
   p1.collided = true;
   p1.fill = 0xffff0000;
+  p1.vx = 0;
+  p1.vy = 0;
   if(!(p2 instanceof Sun)) {
     p2.collided = true;
     p2.fill = 0xffff0000;
+    p2.vx = 0;
+    p2.vy = 0;
   }
 }
 
