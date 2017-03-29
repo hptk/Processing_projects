@@ -22,7 +22,7 @@ void setup() {
     
     float size = 4*var + i/3;
     int distance_from_sun = (int)(100*var + 100*i);
-    double speed = orbital_velocity(size, distance_from_sun);
+    double speed = orbital_velocity(size, distance_from_sun)+0.4;
     int fill_color = (int)random(0x00f000, 0xffffff);
     int fill = 0xff000000 + fill_color;
     
