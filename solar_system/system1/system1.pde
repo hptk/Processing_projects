@@ -15,6 +15,7 @@ void setup() {
   noStroke();
   background(0.0);
   textSize(TEXT_SIZE);
+  textLeading(TEXT_SIZE);
   textAlign(LEFT, TOP);
   
   planets = new ArrayList<Planet>(num_planets);
@@ -58,14 +59,14 @@ void write_planet_info(Planet p) {
   if(p == sun) return;
   fill(0x000000);
   stroke(0x000000);
-  rect(p.x+p.size-2, p.y+p.size-2, 30+6, TEXT_SIZE+6);
+  rect(p.x+p.size, p.y+p.size, 45+6, TEXT_SIZE*2+6);
   stroke(0xffffffff);
   fill(0x000000);
-  rect(p.x+p.size, p.y+p.size, 30, TEXT_SIZE+2);
+  rect(p.x+p.size+2, p.y+p.size+2, 45, TEXT_SIZE*2+2);
   noStroke();
   fill(0xffffffff);
-  String text = "v: " + (int)pyth(p.vx, p.vy);
-  text(text, p.x+p.size, p.y+p.size);
+  String text = "v: " + (int)pyth(p.vx, p.vy) + "\nm: " + (int)p.mass;
+  text(text, p.x+p.size+3, p.y+p.size+2);
 }
 
 void move_planet(Planet p1) {
