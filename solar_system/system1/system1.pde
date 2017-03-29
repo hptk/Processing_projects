@@ -1,9 +1,12 @@
-int num_planets = 5;
+final int num_planets = 5;
 final int win_size_x = 1400, win_size_y = 1000;
 final int TEXT_SIZE = 12;
 final float VARIANCE = 0.3;
-boolean DEBUG = true;
-Planet sun;
+final boolean DEBUG = false;
+final boolean ALLOW_COMETS = true;
+final int COMET_SIZE = 2;
+
+Sun sun;
 
 ArrayList<Planet> planets;
 
@@ -20,14 +23,19 @@ void setup() {
   
   for(int i = 0; i < num_planets; i++) {
     float var = random(1-VARIANCE, 1+VARIANCE);
-    
-    float size = 4*var + i/3;
     int distance_from_sun = (int)(100*var + 100*i);
-    double speed = orbital_velocity(size, distance_from_sun)+0.4;
-    int fill_color = (int)random(0x00f000, 0xffffff);
-    int fill = 0xff000000 + fill_color;
-    
-    planets.add(new Planet(size, distance_from_sun, speed, fill));
+
+    if(ALLOW_COMETS && (int)random(5)%5 == 0) { //comet
+      double speed = orbital_velocity(COMET_SIZE, distance_from_sun)/2;
+      planets.add(new Comet(distance_from_sun, speed));
+      i--;
+    } else { //planet
+      float size = 4*var + i/3;
+      double speed = orbital_velocity(size, distance_from_sun)+0.4;
+      int fill_color = (int)random(0x00f000, 0xffffff);
+      int fill = 0xff000000 + fill_color;
+      planets.add(new Planet(size, distance_from_sun, speed, fill));
+    }
   }
 }
 
@@ -168,5 +176,11 @@ class Planet {
 class Sun extends Planet {
   Sun(){
     super(35, 0, 0, 0xffFFC000);
+  }
+}
+
+class Comet extends Planet {
+  Comet(int distance_from_sun, double speed) {
+    super(COMET_SIZE, distance_from_sun, speed, 0xffffffff);
   }
 }
