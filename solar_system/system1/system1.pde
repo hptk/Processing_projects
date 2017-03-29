@@ -1,5 +1,7 @@
 int num_planets = 5;
 final int win_size_x = 1400, win_size_y = 1000;
+final int TEXT_SIZE = 12;
+boolean DEBUG = true;
 Planet sun;
 
 ArrayList<Planet> planets;
@@ -8,6 +10,8 @@ void setup() {
   size(1400, 1000);
   noStroke();
   background(0.0);
+  textSize(TEXT_SIZE);
+  textAlign(LEFT, TOP);
   
   planets = new ArrayList<Planet>(num_planets);
   sun = new Sun();
@@ -18,10 +22,9 @@ void setup() {
     
     float size = 4*var + i/3;
     int distance_from_sun = (int)(100*var + 100*i);
-    float speed = (float)(Math.sqrt((75 * size*size*size*PI*(4/3)) / distance_from_sun));
+    double speed = orbital_velocity(size, distance_from_sun);
     int fill_color = (int)random(0x00f000, 0xffffff);
     int fill = 0xff000000 + fill_color;
-    
     
     planets.add(new Planet(size, distance_from_sun, speed, fill));
   }
@@ -39,6 +42,20 @@ void draw() {
 void draw_planet(Planet p) {
   fill(p.fill);
   ellipse(p.x, p.y, p.size, p.size);
+  if(DEBUG) write_planet_info(p);
+}
+
+void write_planet_info(Planet p) {
+  fill(0x000000);
+  stroke(0x000000);
+  rect(p.x+p.size-2, p.y+p.size-2, 30+6, TEXT_SIZE+6);
+  stroke(0xffffffff);
+  fill(0x000000);
+  rect(p.x+p.size, p.y+p.size, 30, TEXT_SIZE+2);
+  noStroke();
+  fill(p.fill);
+  String text = "v: " + (int)pyth(p.vx, p.vy);
+  text(text, p.x+p.size, p.y+p.size);
 }
 
 void move_planet(Planet p1) {
@@ -79,6 +96,10 @@ double force_of_gravity(Planet p1, Planet p2) {
   return 0.3 * (p1.mass*p2.mass)/Math.pow(distance(p1, p2), 2)*10e-5;
 }
 
+double orbital_velocity(float size, int distance_from_sun) {
+  return Math.sqrt((75 * size*size*size*PI*(4/3)) / distance_from_sun);
+}
+
 float get_angle(Planet p, Planet target) {
   return radians((float) Math.toDegrees(Math.atan2(target.y - p.y, target.x - p.x)));
 }
@@ -87,7 +108,7 @@ double distance(Planet p1, Planet p2) {
   return pyth(p1.x - p2.x, p1.y - p2.y);
 }
 
-double pyth(float x, float y) {
+double pyth(double x, double y) {
   return Math.sqrt((x*x)+(y*y)); 
 }
 
@@ -100,25 +121,41 @@ class Planet {
   int fill = 0xffffffff;
   boolean collided = false;
   
-  float x = win_size_x/2, y;
-  float vx = 35, vy = 0;
+  float x, y;
+  double vx = 0, vy = 0;
   
-  Planet(float size, int distance_from_sun, float speed, int fill) {
+  Planet(float size, int distance_from_sun, double speed, int fill) {
     this.size = size;
-    this.y = win_size_y/2 - distance_from_sun;
-    this.vx = speed;
+    set_initial_position_and_speed(speed, distance_from_sun);
     this.mass = size*size*size*PI*(4/3);
     this.fill = fill;
   }
   
-  Planet(float size, int distance_from_sun) {
-    this.size = size;
-    this.y = win_size_y/2 - distance_from_sun;
-    this.mass = size*size*size*PI*(4/3);
-  }
-  
-  Planet(int distance_from_sun){
-    this.y = win_size_y/2 - distance_from_sun;
+  void set_initial_position_and_speed(double speed, int distance_from_sun) {
+    int pos = (int)random(1000)%4;
+    
+    switch(pos){
+      case 0:
+        this.y = win_size_y/2 - distance_from_sun;
+        this.x = win_size_x/2;
+        this.vx = speed;
+        break;
+      case 1:
+        this.y = win_size_y/2 + distance_from_sun;
+        this.x = win_size_x/2;
+        this.vx = -speed;
+        break;
+      case 2:
+        this.y = win_size_y/2;
+        this.x = win_size_x/2  - distance_from_sun;
+        this.vy = -speed;
+        break;
+      case 3:
+        this.y = win_size_y/2;
+        this.x = win_size_x/2 + distance_from_sun;
+        this.vy = speed;
+    }
+    
   }
 }
 
