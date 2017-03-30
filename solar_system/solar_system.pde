@@ -2,13 +2,13 @@ final int NUM_PLANETS = 10;
 final int WIN_X = 1400, WIN_Y = 1000;
 
 final int TEXT_SIZE = 12;
-final boolean DEBUG = true;
-final boolean ALLOW_COMETS = true;
+int debug_level = 1;
 
 final float VARIANCE = 0.5;
 final float SCALE = 1; //master scale variable for system model
-final float SPEEDUP = 2;
+final float SPEEDUP = 1;
 
+final boolean ALLOW_COMETS = true;
 final int COMET_SIZE = 2;
 final float COMET_SPEED_PENALTY = 2.5;
 final int COMET_EXTRA_DISTANCE = 50;
@@ -17,6 +17,12 @@ final int COMET_PERCENT = 30;
 final int SUN_SIZE = 35;
 
 final int PLANET_DISTANCE = 80;
+
+final boolean ALLOW_MOONS = false;
+final int MOON_PERCENT = 50;
+final int MOON_SIZE = 2;
+final int MOON_DISTANCE = 4;
+final float MOON_EXTRA_SPEED = 1.1;
 
 Sun sun;
 int comet_count = 0;
@@ -52,7 +58,13 @@ void setup() {
       double speed = orbital_velocity(size, distance_from_sun);
       int fill_color = (int)random(0x00f000, 0xffffff);
       int fill = 0xff000000 + fill_color;
-      planets.add(new Planet(size, distance_from_sun, speed, fill));
+      Planet p = new Planet(size, distance_from_sun, speed, fill);
+      planets.add(p);
+      if(ALLOW_MOONS && (int)random(100) < MOON_PERCENT) { //add moon
+        speed = orbital_velocity(size, distance_from_sun)*(MOON_EXTRA_SPEED*SCALE);
+        distance_from_sun += MOON_DISTANCE*var*SCALE;
+        planets.add(new Moon(distance_from_sun, speed, p.pos));
+      }
     }
   }
 }
@@ -64,9 +76,11 @@ void draw() {
     move_planet(p);
     draw_planet(p);
   }
-  if(DEBUG) {
-    for(Planet p : planets) {
-      write_planet_info(p);
+  if(debug_level >= 1) {
+    if(debug_level >= 2) {
+      for(Planet p : planets) {
+        write_planet_info(p);
+      }
     }
     write_all_info();
   }
@@ -102,15 +116,15 @@ void write_planet_info(Planet p) {
 void write_all_info() {
   stroke(0xffffffff);
   fill(0x000000);
-  rect(1, 1, 200, TEXT_SIZE*5+2);
+  rect(1, 1, 200, TEXT_SIZE*5+5);
   noStroke();
   fill(0xffffffff);
 
   String text = "INFORMATION:";
+  text += "\nTime: " + (millis() - start_time) / 1000;
   text += "\nPlanets: " + NUM_PLANETS;
   text += "\nComets: " + comet_count;
   text += "\nCollisions: " + collision_count;
-  text += "\nTime: " + (millis() - start_time) / 1000;
   text(text, 2, 2);
 }
 
@@ -147,7 +161,8 @@ boolean calculate_movement(Planet p1, Planet p2){
 }
 
 boolean collision(Planet p1, Planet p2){
-  if(!(p2 instanceof Sun) && p1 instanceof Comet) return false;
+  if(!(p2 instanceof Sun) && (p1 instanceof Comet || p1 instanceof Moon)) return false;
+  if (p2 instanceof Moon) return false;
   collision_count++;
 
   if(!(p2 instanceof Sun)) {
@@ -192,6 +207,7 @@ class Planet {
   
   float size = 10;
   float mass = 10*10*PI;
+  int pos = -1;
   
   int fill = 0xffffffff;
   boolean collided = false;
@@ -205,9 +221,17 @@ class Planet {
     this.mass = (float)Math.pow(size/2, 3)*PI*(4/3);
     this.fill = fill;
   }
-  
+
+  Planet(float size, int distance_from_sun, double speed, int fill, int pos) {
+    this.size = size;
+    this.pos = pos;
+    set_initial_position_and_speed(speed, distance_from_sun);
+    this.mass = (float)Math.pow(size/2, 3)*PI*(4/3);
+    this.fill = fill;
+  }
+
   void set_initial_position_and_speed(double speed, int distance_from_sun) {
-    int pos = (int)random(4);
+    if(pos == -1) pos = (int)random(4);
     
     switch(pos){
       case 0:
@@ -243,5 +267,13 @@ class Sun extends Planet {
 class Comet extends Planet {
   Comet(int distance_from_sun, double speed) {
     super(COMET_SIZE*SCALE, distance_from_sun, speed, 0xffffffff);
+  }
+}
+
+class Moon extends Planet {
+  Moon(int distance_from_sun, double speed, int pos) {
+    super(MOON_SIZE*SCALE, distance_from_sun, speed, 0xffffffff, pos);
+    this.vx /= 1;
+    this.vy /= 1;
   }
 }
