@@ -94,7 +94,10 @@ void draw() {
 }
 
 void draw_planet(Planet p) {
+  if(!p.draw) return;
   if(p instanceof Comet && p.collided) return;
+  //fill(0xff000000);
+  //if(p instanceof Comet) ellipse(p.x, p.y, p.size+2, p.size+2);
   fill(p.fill);
   ellipse(p.x, p.y, p.size, p.size);
 }
@@ -217,10 +220,17 @@ void draw_clear_button() {
   noStroke();
 }
 
+void clear_button_pressed() {
+  fill(0xff000000);
+  rect(0, 0, WIN_X, WIN_Y);
+  for(Planet p : planets) {
+    if(p.collided) p.draw = false;
+  }
+}
+
 void mousePressed() {
   if (overRect(CLEAR_BUTTON_X, CLEAR_BUTTON_Y, CLEAR_BUTTON_WIDTH, CLEAR_BUTTON_HEIGHT)) {
-    fill(0xff000000);
-    rect(0, 0, WIN_X, WIN_Y);
+    clear_button_pressed();
   }
 }
 
@@ -241,6 +251,7 @@ class Planet {
   
   int fill = 0xffffffff;
   boolean collided = false;
+  boolean draw = true;
   
   float x, y;
   double vx = 0, vy = 0;
