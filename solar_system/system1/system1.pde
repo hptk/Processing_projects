@@ -1,10 +1,20 @@
 final int NUM_PLANETS = 5;
 final int WIN_X = 1400, WIN_Y = 1000;
+
 final int TEXT_SIZE = 12;
-final float VARIANCE = 0.6;
 final boolean DEBUG = true;
 final boolean ALLOW_COMETS = true;
+
+final float VARIANCE = 0.5;
+final float SCALE = 1; //master scale variable for system model
+
 final int COMET_SIZE = 2;
+final float COMET_SPEED_PENALTY = 2.5;
+final int COMET_EXTRA_DISTANCE = 250;
+
+final int SUN_SIZE = 35;
+
+final int PLANET_DISTANCE = 100;
 
 Sun sun;
 int comet_count = 0;
@@ -28,16 +38,16 @@ void setup() {
   
   for(int i = 0; i < NUM_PLANETS; i++) {
     float var = random(1-VARIANCE, 1+VARIANCE);
-    int distance_from_sun = (int)(100*var + 100*i);
+    int distance_from_sun = (int)(SCALE*PLANET_DISTANCE*var + SCALE*PLANET_DISTANCE*i);
 
     if(ALLOW_COMETS && (int)random(5)%5 == 0) { //comet
-      double speed = orbital_velocity(COMET_SIZE, distance_from_sun)/3;
-      planets.add(new Comet((int)(distance_from_sun+(250*var)), speed*var));
+      double speed = SCALE*orbital_velocity(COMET_SIZE, distance_from_sun)/COMET_SPEED_PENALTY;
+      planets.add(new Comet((int)(distance_from_sun+(SCALE*COMET_EXTRA_DISTANCE*var)), speed*var));
       i--;
       comet_count++;
     } else { //planet
-      float size = 4*var + i/3;
-      double speed = orbital_velocity(size, distance_from_sun)+0.4;
+      float size = SCALE*4*var + i/3*SCALE;
+      double speed = SCALE*orbital_velocity(size, distance_from_sun);
       int fill_color = (int)random(0x00f000, 0xffffff);
       int fill = 0xff000000 + fill_color;
       planets.add(new Planet(size, distance_from_sun, speed, fill));
@@ -46,7 +56,7 @@ void setup() {
 }
 
 void draw() {
-  fill(0xa000000);
+  fill(0x0a000000);
   rect(0, 0, WIN_X, WIN_Y);
   for(Planet p : planets) {
     move_planet(p);
@@ -63,16 +73,19 @@ void draw_planet(Planet p) {
 
 void write_planet_info(Planet p) {
   if(p == sun) return;
+  if(p.collided) return;
   fill(0x000000);
   stroke(0x000000);
-  rect(p.x+p.size, p.y+p.size, 45+6, TEXT_SIZE*2+6);
+  rect(p.x+p.size*SCALE, p.y+p.size*SCALE, 50+6, TEXT_SIZE*3+6);
   stroke(0xffffffff);
   fill(0x000000);
-  rect(p.x+p.size+2, p.y+p.size+2, 45, TEXT_SIZE*2+2);
+  rect(p.x+p.size*SCALE+2, p.y+p.size*SCALE+2, 50, TEXT_SIZE*3+2);
   noStroke();
   fill(0xffffffff);
-  String text = "v: " + (int)pyth(p.vx, p.vy) + "\nm: " + (int)p.mass;
-  text(text, p.x+p.size+3, p.y+p.size+2);
+  String text = "v: " + (int)(1000*pyth(p.vx, p.vy))/100.0;
+  text += "\nm: " + (int)p.mass;
+  text += "\nd: " + (int)distance(p, sun);
+  text(text, p.x+p.size*SCALE+3, p.y+p.size*SCALE+3);
 }
 
 void write_all_info() {
@@ -101,15 +114,15 @@ int get_total_planet_mass() {
 void move_planet(Planet p1) {
   for(Planet p2 : planets) {
     if(calculate_movement(p1, p2)) {
-      double force = force_of_gravity(p1, p2)*2;
+      double force = SCALE * force_of_gravity(p1, p2);
       float angle = get_angle(p1, p2);
       p1.vx += cos(angle) * force;
       p1.vy += sin(angle) * force;
     }
   }
   if(p1.collided) return;
-  p1.x += p1.vx/10;
-  p1.y += p1.vy/10;
+  p1.x += p1.vx;
+  p1.y += p1.vy;
 }
 
 boolean calculate_movement(Planet p1, Planet p2){
@@ -138,11 +151,11 @@ void collision(Planet p1, Planet p2){
 }
 
 double force_of_gravity(Planet p1, Planet p2) {
-  return 0.3 * (p1.mass*p2.mass)/Math.pow(distance(p1, p2), 2)*10e-5;
+  return (p1.mass*p2.mass)/Math.pow(distance(p1, p2), 2)*1e-4;
 }
 
 double orbital_velocity(float size, int distance_from_sun) {
-  return Math.sqrt((75 * size*size*size*PI*(4/3)) / distance_from_sun);
+  return Math.sqrt((sun.mass * Math.pow(size/2, 3)*PI*(4/3)) / distance_from_sun)/100;
 }
 
 float get_angle(Planet p, Planet target) {
@@ -172,12 +185,12 @@ class Planet {
   Planet(float size, int distance_from_sun, double speed, int fill) {
     this.size = size;
     set_initial_position_and_speed(speed, distance_from_sun);
-    this.mass = size*size*size*PI*(4/3);
+    this.mass = (float)Math.pow(size/2, 3)*PI*(4/3);
     this.fill = fill;
   }
   
   void set_initial_position_and_speed(double speed, int distance_from_sun) {
-    int pos = (int)random(1000)%4;
+    int pos = (int)random(4);
     
     switch(pos){
       case 0:
@@ -206,12 +219,12 @@ class Planet {
 
 class Sun extends Planet {
   Sun(){
-    super(35, 0, 0, 0xffFFC000);
+    super(SUN_SIZE*SCALE, 0, 0, 0xffFFC000);
   }
 }
 
 class Comet extends Planet {
   Comet(int distance_from_sun, double speed) {
-    super(COMET_SIZE, distance_from_sun, speed, 0xffffffff);
+    super(COMET_SIZE*SCALE, distance_from_sun, speed, 0xffffffff);
   }
 }
