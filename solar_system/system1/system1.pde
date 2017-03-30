@@ -1,4 +1,4 @@
-final int NUM_PLANETS = 5;
+final int NUM_PLANETS = 10;
 final int WIN_X = 1400, WIN_Y = 1000;
 
 final int TEXT_SIZE = 12;
@@ -10,11 +10,12 @@ final float SCALE = 1; //master scale variable for system model
 
 final int COMET_SIZE = 2;
 final float COMET_SPEED_PENALTY = 2.5;
-final int COMET_EXTRA_DISTANCE = 250;
+final int COMET_EXTRA_DISTANCE = 50;
+final int COMET_PERCENT = 30;
 
 final int SUN_SIZE = 35;
 
-final int PLANET_DISTANCE = 100;
+final int PLANET_DISTANCE = 80;
 
 Sun sun;
 int comet_count = 0;
@@ -40,7 +41,7 @@ void setup() {
     float var = random(1-VARIANCE, 1+VARIANCE);
     int distance_from_sun = (int)(SCALE*PLANET_DISTANCE*var + SCALE*PLANET_DISTANCE*i);
 
-    if(ALLOW_COMETS && (int)random(5)%5 == 0) { //comet
+    if(ALLOW_COMETS && (int)random(100) < COMET_PERCENT) { //comet
       double speed = SCALE*orbital_velocity(COMET_SIZE, distance_from_sun)/COMET_SPEED_PENALTY;
       planets.add(new Comet((int)(distance_from_sun+(SCALE*COMET_EXTRA_DISTANCE*var)), speed*var));
       i--;
@@ -62,13 +63,18 @@ void draw() {
     move_planet(p);
     draw_planet(p);
   }
-  if(DEBUG) write_all_info();
+  if(DEBUG) {
+    for(Planet p : planets) {
+      write_planet_info(p);
+    }
+    write_all_info();
+  }
 }
 
 void draw_planet(Planet p) {
+  if(p instanceof Comet && p.collided) return;
   fill(p.fill);
   ellipse(p.x, p.y, p.size, p.size);
-  if(DEBUG) write_planet_info(p);
 }
 
 void write_planet_info(Planet p) {
@@ -77,7 +83,11 @@ void write_planet_info(Planet p) {
   fill(0x000000);
   stroke(0x000000);
   rect(p.x+p.size*SCALE, p.y+p.size*SCALE, 50+6, TEXT_SIZE*3+6);
-  stroke(0xffffffff);
+  if(p instanceof Comet) {
+    stroke(0xff00ffff);
+  } else {
+    stroke(0xffffffff);
+  }
   fill(0x000000);
   rect(p.x+p.size*SCALE+2, p.y+p.size*SCALE+2, 50, TEXT_SIZE*3+2);
   noStroke();
@@ -94,7 +104,7 @@ void write_all_info() {
   rect(1, 1, 200, TEXT_SIZE*5+2);
   noStroke();
   fill(0xffffffff);
-  
+
   String text = "INFORMATION:";
   text += "\nPlanets: " + NUM_PLANETS;
   text += "\nComets: " + comet_count;
@@ -130,24 +140,30 @@ boolean calculate_movement(Planet p1, Planet p2){
   if(p1 instanceof Sun) return false;
   if(p1.collided || p2.collided) return false;
   if(distance(p1, p2) < (p1.size/2) + (p2.size/2)) {
-    collision(p1, p2);
-    return false;
+    return collision(p1, p2);
   }
   return true;
 }
 
-void collision(Planet p1, Planet p2){ 
-  p1.collided = true;
-  p1.fill = 0xffff0000;
-  p1.vx = 0;
-  p1.vy = 0;
+boolean collision(Planet p1, Planet p2){
+  if(!(p2 instanceof Sun) && p1 instanceof Comet) return false;
+  collision_count++;
+
   if(!(p2 instanceof Sun)) {
     p2.collided = true;
     p2.fill = 0xffff0000;
     p2.vx = 0;
     p2.vy = 0;
+    if(p2 instanceof Comet) {
+      comet_count--;
+      return true;
+    }
   }
-  collision_count++;
+  p1.collided = true;
+  p1.fill = 0xffff0000;
+  p1.vx = 0;
+  p1.vy = 0;
+  return false;
 }
 
 double force_of_gravity(Planet p1, Planet p2) {
