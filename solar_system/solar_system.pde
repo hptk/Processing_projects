@@ -1,4 +1,4 @@
-final int NUM_PLANETS = 10;
+final int NUM_PLANETS = 20;
 final int WIN_X = 1400, WIN_Y = 1000;
 
 final int TEXT_SIZE = 12;
@@ -12,11 +12,11 @@ final boolean ALLOW_COMETS = true;
 final int COMET_SIZE = 2;
 final float COMET_SPEED_PENALTY = 2.5;
 final int COMET_EXTRA_DISTANCE = 50;
-final int COMET_PERCENT = 30;
+final int COMET_PERCENT = 70;
 
 final int SUN_SIZE = 35;
 
-final int PLANET_DISTANCE = 80;
+final int PLANET_DISTANCE = 40;
 
 final boolean ALLOW_MOONS = false;
 final int MOON_PERCENT = 50;
@@ -63,7 +63,7 @@ void setup() {
       if(ALLOW_MOONS && (int)random(100) < MOON_PERCENT) { //add moon
         speed = orbital_velocity(size, distance_from_sun)*(MOON_EXTRA_SPEED*SCALE);
         distance_from_sun += MOON_DISTANCE*var*SCALE;
-        planets.add(new Moon(distance_from_sun, speed, p.pos));
+        planets.add(new Moon(distance_from_sun, speed));
       }
     }
   }
@@ -222,39 +222,15 @@ class Planet {
     this.fill = fill;
   }
 
-  Planet(float size, int distance_from_sun, double speed, int fill, int pos) {
-    this.size = size;
-    this.pos = pos;
-    set_initial_position_and_speed(speed, distance_from_sun);
-    this.mass = (float)Math.pow(size/2, 3)*PI*(4/3);
-    this.fill = fill;
-  }
-
   void set_initial_position_and_speed(double speed, int distance_from_sun) {
-    if(pos == -1) pos = (int)random(4);
+    float angle = random(2*PI);
+    this.x = WIN_X/2 + distance_from_sun*cos(angle);
+    this.y = WIN_Y/2 + distance_from_sun*sin(angle);
     
-    switch(pos){
-      case 0:
-        this.y = WIN_Y/2 - distance_from_sun;
-        this.x = WIN_X/2;
-        this.vx = speed;
-        break;
-      case 1:
-        this.y = WIN_Y/2 + distance_from_sun;
-        this.x = WIN_X/2;
-        this.vx = -speed;
-        break;
-      case 2:
-        this.y = WIN_Y/2;
-        this.x = WIN_X/2  - distance_from_sun;
-        this.vy = -speed;
-        break;
-      case 3:
-        this.y = WIN_Y/2;
-        this.x = WIN_X/2 + distance_from_sun;
-        this.vy = speed;
-    }
+    angle += 1.57079633;
     
+    this.vx = cos(angle) * speed;
+    this.vy = sin(angle) * speed;
   }
 }
 
@@ -271,8 +247,8 @@ class Comet extends Planet {
 }
 
 class Moon extends Planet {
-  Moon(int distance_from_sun, double speed, int pos) {
-    super(MOON_SIZE*SCALE, distance_from_sun, speed, 0xffffffff, pos);
+  Moon(int distance_from_sun, double speed) {
+    super(MOON_SIZE*SCALE, distance_from_sun, speed, 0xffffffff);
     this.vx /= 1;
     this.vy /= 1;
   }
