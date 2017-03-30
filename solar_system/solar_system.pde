@@ -7,6 +7,7 @@ final boolean ALLOW_COMETS = true;
 
 final float VARIANCE = 0.5;
 final float SCALE = 1; //master scale variable for system model
+final float SPEEDUP = 2;
 
 final int COMET_SIZE = 2;
 final float COMET_SPEED_PENALTY = 2.5;
@@ -47,8 +48,8 @@ void setup() {
       i--;
       comet_count++;
     } else { //planet
-      float size = SCALE*4*var + i/3*SCALE;
-      double speed = SCALE*orbital_velocity(size, distance_from_sun);
+      float size = SCALE * (4*var + i/3);
+      double speed = orbital_velocity(size, distance_from_sun);
       int fill_color = (int)random(0x00f000, 0xffffff);
       int fill = 0xff000000 + fill_color;
       planets.add(new Planet(size, distance_from_sun, speed, fill));
@@ -167,11 +168,11 @@ boolean collision(Planet p1, Planet p2){
 }
 
 double force_of_gravity(Planet p1, Planet p2) {
-  return (p1.mass*p2.mass)/Math.pow(distance(p1, p2), 2)*1e-4;
+  return (p1.mass*p2.mass)/Math.pow(distance(p1, p2), 2)*(1e-4*SPEEDUP);
 }
 
 double orbital_velocity(float size, int distance_from_sun) {
-  return Math.sqrt((sun.mass * Math.pow(size/2, 3)*PI*(4/3)) / distance_from_sun)/100;
+  return Math.sqrt((sun.mass * Math.pow(size/2, 3)*PI*(4/3)) / distance_from_sun)/(100/SPEEDUP);
 }
 
 float get_angle(Planet p, Planet target) {
