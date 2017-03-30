@@ -31,6 +31,12 @@ int start_time = 0;
 
 ArrayList<Planet> planets;
 
+final int CLEAR_BUTTON_WIDTH = 50;
+final int CLEAR_BUTTON_HEIGHT = TEXT_SIZE*2;
+final String CLEAR_BUTTON_TEXT = "CLEAR";
+final int CLEAR_BUTTON_X = WIN_X-CLEAR_BUTTON_WIDTH-3;
+final int CLEAR_BUTTON_Y = 2;
+
 void setup() {
   start_time = millis();
   size(1400, 1000);
@@ -72,6 +78,7 @@ void setup() {
 void draw() {
   fill(0x0a000000);
   rect(0, 0, WIN_X, WIN_Y);
+  draw_clear_button();
   for(Planet p : planets) {
     move_planet(p);
     draw_planet(p);
@@ -202,6 +209,29 @@ double pyth(double x, double y) {
   return Math.sqrt((x*x)+(y*y)); 
 }
 
+void draw_clear_button() {
+  stroke(0xffffffff);
+  rect(CLEAR_BUTTON_X, CLEAR_BUTTON_Y, CLEAR_BUTTON_WIDTH, CLEAR_BUTTON_HEIGHT);
+  fill(0xffffffff);
+  text(CLEAR_BUTTON_TEXT, CLEAR_BUTTON_X, CLEAR_BUTTON_Y);
+  noStroke();
+}
+
+void mousePressed() {
+  if (overRect(CLEAR_BUTTON_X, CLEAR_BUTTON_Y, CLEAR_BUTTON_WIDTH, CLEAR_BUTTON_HEIGHT)) {
+    fill(0xff000000);
+    rect(0, 0, WIN_X, WIN_Y);
+  }
+}
+
+boolean overRect(int x, int y, int width, int height)  {
+  if (mouseX >= x && mouseX <= x+width &&
+      mouseY >= y && mouseY <= y+height) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 class Planet {
   
