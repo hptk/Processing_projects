@@ -4,19 +4,22 @@ final int WIN_X = 1400, WIN_Y = 1000;
 final int TEXT_SIZE = 12;
 int debug_level = 1;
 
-final float VARIANCE = 0.5;
+final float SIZE_VARIANCE = 0.5;
+final float DISTANCE_VARIANCE = 0;
+final float SPEED_VARIANCE = 0.5;
 final float SCALE = 1; //master scale variable for system model
 final float SPEEDUP = 1;
 
 final boolean ALLOW_COMETS = true;
 final int COMET_SIZE = 2;
 final float COMET_SPEED_PENALTY = 2.5;
-final int COMET_EXTRA_DISTANCE = 50;
+final int COMET_EXTRA_DISTANCE = 250;
 final int COMET_PERCENT = 70;
 
 final int SUN_SIZE = 35;
 
-final int PLANET_DISTANCE = 40;
+final int PLANET_DISTANCE = 100;
+final float PLANET_SCALING = 0.3;
 
 final boolean ALLOW_MOONS = false;
 final int MOON_PERCENT = 50;
@@ -51,16 +54,18 @@ void setup() {
   planets.add(sun);
   
   for(int i = 0; i < NUM_PLANETS; i++) {
-    float var = random(1-VARIANCE, 1+VARIANCE);
-    int distance_from_sun = (int)(SCALE*PLANET_DISTANCE*var + SCALE*PLANET_DISTANCE*i);
+    float size_var = random(1-SIZE_VARIANCE, 1+SIZE_VARIANCE);
+    float distance_var = random(1-DISTANCE_VARIANCE, 1+DISTANCE_VARIANCE);
+    float speed_var = random(1-SPEED_VARIANCE, 1+SPEED_VARIANCE);
+    int distance_from_sun = (int)(SCALE * (PLANET_DISTANCE*distance_var + PLANET_DISTANCE*i));
 
     if(ALLOW_COMETS && (int)random(100) < COMET_PERCENT) { //comet
-      double speed = SCALE*orbital_velocity(COMET_SIZE, distance_from_sun)/COMET_SPEED_PENALTY;
-      planets.add(new Comet((int)(distance_from_sun+(SCALE*COMET_EXTRA_DISTANCE*var)), speed*var));
+      double speed = SCALE*orbital_velocity(COMET_SIZE, distance_from_sun)/COMET_SPEED_PENALTY*speed_var;
+      planets.add(new Comet((int)(distance_from_sun+(SCALE*COMET_EXTRA_DISTANCE*distance_var)), speed));
       i--;
       comet_count++;
     } else { //planet
-      float size = SCALE * (4*var + i/3);
+      float size = SCALE * (4*size_var + i*PLANET_SCALING);
       double speed = orbital_velocity(size, distance_from_sun);
       int fill_color = (int)random(0x00f000, 0xffffff);
       int fill = 0xff000000 + fill_color;
@@ -68,7 +73,7 @@ void setup() {
       planets.add(p);
       if(ALLOW_MOONS && (int)random(100) < MOON_PERCENT) { //add moon
         speed = orbital_velocity(size, distance_from_sun)*(MOON_EXTRA_SPEED*SCALE);
-        distance_from_sun += MOON_DISTANCE*var*SCALE;
+        distance_from_sun += MOON_DISTANCE*distance_var*SCALE;
         planets.add(new Moon(distance_from_sun, speed));
       }
     }
