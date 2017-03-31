@@ -1,18 +1,18 @@
-final int NUM_PLANETS = 20;
+final int NUM_PLANETS = 5;
 final int WIN_X = 1400, WIN_Y = 1000;
 
 final int TEXT_SIZE = 12;
 int debug_level = 1;
 
-final float SIZE_VARIANCE = 0.5;
+final float SIZE_VARIANCE = 0.3;
 final float DISTANCE_VARIANCE = 0;
-final float SPEED_VARIANCE = 0.5;
 final float SCALE = 1; //master scale variable for system model
 final float SPEEDUP = 1;
 
 final boolean ALLOW_COMETS = true;
 final int COMET_SIZE = 2;
 final float COMET_SPEED_PENALTY = 2.5;
+final float COMET_SPEED_VARIANCE = 0.3;
 final int COMET_EXTRA_DISTANCE = 250;
 final int COMET_PERCENT = 70;
 
@@ -56,11 +56,11 @@ void setup() {
   for(int i = 0; i < NUM_PLANETS; i++) {
     float size_var = random(1-SIZE_VARIANCE, 1+SIZE_VARIANCE);
     float distance_var = random(1-DISTANCE_VARIANCE, 1+DISTANCE_VARIANCE);
-    float speed_var = random(1-SPEED_VARIANCE, 1+SPEED_VARIANCE);
     int distance_from_sun = (int)(SCALE * (PLANET_DISTANCE*distance_var + PLANET_DISTANCE*i));
 
     if(ALLOW_COMETS && (int)random(100) < COMET_PERCENT) { //comet
-      double speed = SCALE*orbital_velocity(COMET_SIZE, distance_from_sun)/COMET_SPEED_PENALTY*speed_var;
+      float comet_speed_var = random(1-COMET_SPEED_VARIANCE, 1+COMET_SPEED_VARIANCE);
+      double speed = SCALE*orbital_velocity(COMET_SIZE, distance_from_sun)/COMET_SPEED_PENALTY*comet_speed_var;
       planets.add(new Comet((int)(distance_from_sun+(SCALE*COMET_EXTRA_DISTANCE*distance_var)), speed));
       i--;
       comet_count++;
