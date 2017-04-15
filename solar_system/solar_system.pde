@@ -1,22 +1,22 @@
-final int NUM_PLANETS = 5;
+final int NUM_PLANETS = 3;
 final int WIN_X = 1400, WIN_Y = 1000;
 
 final int TEXT_SIZE = 12;
-int debug_level = 1;
+int debug_level = 2;
 
-final float SIZE_VARIANCE = 0.3;
-final float DISTANCE_VARIANCE = 0;
+final float SIZE_VARIANCE = 0.4;
+final float DISTANCE_VARIANCE = 0.0;
 final float SCALE = 1; //master scale variable for system model
 final float SPEEDUP = 1;
 
 final boolean ALLOW_COMETS = true;
 final int COMET_SIZE = 2;
-final float COMET_SPEED_PENALTY = 2.5;
-final float COMET_SPEED_VARIANCE = 0.3;
+final float COMET_SPEED_PENALTY = 3.5;
+final float COMET_SPEED_VARIANCE = 3;
 final int COMET_EXTRA_DISTANCE = 250;
-final int COMET_PERCENT = 70;
+final int COMET_PERCENT = 90;
 
-final int SUN_SIZE = 35;
+final int SUN_SIZE = 45;
 
 final int PLANET_DISTANCE = 100;
 final float PLANET_SCALING = 0.3;
@@ -56,7 +56,7 @@ void setup() {
   for(int i = 0; i < NUM_PLANETS; i++) {
     float size_var = random(1-SIZE_VARIANCE, 1+SIZE_VARIANCE);
     float distance_var = random(1-DISTANCE_VARIANCE, 1+DISTANCE_VARIANCE);
-    int distance_from_sun = (int)(SCALE * (PLANET_DISTANCE*distance_var + PLANET_DISTANCE*i));
+    int distance_from_sun = (int)(SCALE * (distance_var * (PLANET_DISTANCE + PLANET_DISTANCE*i)));
 
     if(ALLOW_COMETS && (int)random(100) < COMET_PERCENT) { //comet
       float comet_speed_var = random(1-COMET_SPEED_VARIANCE, 1+COMET_SPEED_VARIANCE);
